@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Voice Expense Tracker - AI-powered expense tracking with speech recognition">
+    <title>Voice Expense Tracker | Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ===================================
+           CSS Variables & Theme
+           =================================== */
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --bg-card-hover: rgba(255, 255, 255, 0.06);
+
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --text-muted: #6b6b7b;
+
+            --accent-primary: #8b5cf6;
+            --accent-secondary: #06b6d4;
+            --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow-color: rgba(139, 92, 246, 0.15);
+
+            --border-radius: 16px;
+            --border-radius-sm: 8px;
+            --transition-normal: 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ===================================
+           Layout
+           =================================== */
+        .app-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Header */
+        .app-header {
+            text-align: center;
+            padding: 40px 0;
+            margin-bottom: 32px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 24px;
+            transition: var(--transition-normal);
+        }
+
+        .back-link:hover {
+            color: var(--accent-primary);
+        }
+
+        .app-title {
+            font-size: 36px;
+            margin-bottom: 8px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .app-subtitle {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        /* ===================================
+           Voice Input Section
+           =================================== */
+        .voice-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 32px;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .voice-btn {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: none;
+            background: var(--accent-gradient);
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+            transition: var(--transition-normal);
+            box-shadow: 0 8px 30px var(--shadow-color);
+            margin-bottom: 16px;
+        }
+
+        .voice-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .voice-btn.listening {
+            animation: pulse-ring 1.5s ease-in-out infinite;
+            background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 20px rgba(139, 92, 246, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+            }
+        }
+
+        .voice-status {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .voice-status.listening {
+            color: var(--danger);
+        }
+
+        .transcript-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            padding: 16px;
+            min-height: 60px;
+            text-align: left;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .transcript-placeholder {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Manual Input */
+        .manual-input-section {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .text-input {
+            flex: 1;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .add-btn {
+            padding: 12px 24px;
+            background: var(--accent-gradient);
+            border: none;
+            border-radius: var(--border-radius-sm);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-normal);
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* ===================================
+           Example Phrases
+           =================================== */
+        .examples {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .examples-title {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .example-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .example-chip {
+            padding: 8px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition-normal);
+        }
+
+        .example-chip:hover {
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+        }
+
+        /* ===================================
+           Summary Cards
+           =================================== */
+        .summary-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .summary-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            text-align: center;
+        }
+
+        .summary-card.income {
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .summary-card.expense {
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .summary-card.balance {
+            border-color: var(--accent-primary);
+        }
+
+        .summary-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .summary-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .summary-value.income {
+            color: var(--success);
+        }
+
+        .summary-value.expense {
+            color: var(--danger);
+        }
+
+        .summary-value.balance {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ===================================
+           Transaction Table
+           =================================== */
+        .table-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .clear-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--danger);
+            border-radius: var(--border-radius-sm);
+            color: var(--danger);
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition-normal);
+        }
+
+        .clear-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .transactions-table th,
+        .transactions-table td {
+            padding: 16px 24px;
+            text-align: left;
+        }
+
+        .transactions-table th {
+            background: var(--bg-secondary);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .transactions-table tr {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .transactions-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .transactions-table tr:hover td {
+            background: var(--bg-card-hover);
+        }
+
+        .type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .type-badge.income {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .type-badge.expense {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .amount {
+            font-weight: 600;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        .amount.income {
+            color: var(--success);
+        }
+
+        .amount.expense {
+            color: var(--danger);
+        }
+
+        .delete-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 50%;
+            transition: var(--transition-normal);
+            font-size: 16px;
+        }
+
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .empty-state {
+            padding: 60px 24px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        /* ===================================
+           AI Processing Indicator
+           =================================== */
+        .ai-processing {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 16px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid var(--accent-primary);
+            border-radius: var(--border-radius-sm);
+            margin-bottom: 16px;
+        }
+
+        .ai-processing.active {
+            display: flex;
+        }
+
+        .ai-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--accent-primary);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===================================
+           Tech Stack Badge
+           =================================== */
+        .tech-stack {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 48px;
+            flex-wrap: wrap;
+        }
+
+        .tech-badge {
+            padding: 6px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* ===================================
+           Responsive
+           =================================== */
+        @media (max-width: 768px) {
+            .summary-section {
+                grid-template-columns: 1fr;
+            }
+
+            .manual-input-section {
+                flex-direction: column;
+            }
+
+            .transactions-table th,
+            .transactions-table td {
+                padding: 12px 16px;
+            }
+
+            .transactions-table th:nth-child(4),
+            .transactions-table td:nth-child(4) {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <a href="../../index.html" class="back-link">
+                <span>←</span>
+                <span>Back to Portfolio</span>
+            </a>
+            <h1 class="app-title">🎙️ Voice Expense Tracker</h1>
+            <p class="app-subtitle">พูดรายรับรายจ่ายของคุณ แล้วให้ AI จัดการให้</p>
+        </header>
+
+        <!-- Voice Input Section -->
+        <section class="voice-section">
+            <button class="voice-btn" id="voiceBtn">🎤</button>
+            <div class="voice-status" id="voiceStatus">กดปุ่มเพื่อเริ่มพูด</div>
+
+            <div class="ai-processing" id="aiProcessing">
+                <div class="ai-spinner"></div>
+                <span>AI กำลังประมวลผล...</span>
+            </div>
+
+            <div class="transcript-box" id="transcriptBox">
+                <span class="transcript-placeholder">ข้อความที่พูดจะแสดงที่นี่...</span>
+            </div>
+
+            <div class="manual-input-section">
+                <input type="text" class="text-input" id="manualInput"
+                    placeholder="หรือพิมพ์ข้อความ เช่น: ซื้อกาแฟ 50 บาท">
+                <button class="add-btn" id="addBtn">เพิ่มรายการ</button>
+            </div>
+
+            <div class="examples">
+                <div class="examples-title">💡 ตัวอย่างการพูด:</div>
+                <div class="example-chips">
+                    <span class="example-chip" data-text="ได้เงินเดือน 32000 บาท">ได้เงินเดือน 32000 บาท</span>
+                    <span class="example-chip" data-text="กินข้าวเที่ยง 80 บาท">กินข้าวเที่ยง 80 บาท</span>
+                    <span class="example-chip" data-text="ซื้อกาแฟ 65 บาท">ซื้อกาแฟ 65 บาท</span>
+                    <span class="example-chip" data-text="ค่าน้ำมันรถ 500 บาท">ค่าน้ำมันรถ 500 บาท</span>
+                    <span class="example-chip" data-text="ได้โบนัส 5000 บาท">ได้โบนัส 5000 บาท</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Summary Cards -->
+        <section class="summary-section">
+            <div class="summary-card income">
+                <div class="summary-icon">💰</div>
+                <div class="summary-label">รายรับ</div>
+                <div class="summary-value income" id="totalIncome">฿0</div>
+            </div>
+            <div class="summary-card expense">
+                <div class="summary-icon">💸</div>
+                <div class="summary-label">รายจ่าย</div>
+                <div class="summary-value expense" id="totalExpense">฿0</div>
+            </div>
+            <div class="summary-card balance">
+                <div class="summary-icon">📊</div>
+                <div class="summary-label">คงเหลือ</div>
+                <div class="summary-value balance" id="balance">฿0</div>
+            </div>
+        </section>
+
+        <!-- Transactions Table -->
+        <section class="table-section">
+            <div class="table-header">
+                <h2 class="table-title">📋 รายการทั้งหมด</h2>
+                <button class="clear-btn" id="clearBtn">ล้างทั้งหมด</button>
+            </div>
+            <table class="transactions-table">
+                <thead>
+                    <tr>
+                        <th>ประเภท</th>
+                        <th>รายละเอียด</th>
+                        <th>จำนวนเงิน</th>
+                        <th>วันที่</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="transactionsBody">
+                    <!-- Transactions will be inserted here -->
+                </tbody>
+            </table>
+            <div class="empty-state" id="emptyState">
+                <div class="empty-icon">📝</div>
+                <p>ยังไม่มีรายการ</p>
+                <p>ลองพูดหรือพิมพ์รายรับรายจ่ายของคุณ!</p>
+            </div>
+        </section>
+
+        <!-- Tech Stack -->
+        <div class="tech-stack">
+            <span class="tech-badge">🎤 Web Speech API</span>
+            <span class="tech-badge">🤖 LangChain (Simulation)</span>
+            <span class="tech-badge">⚡ Vanilla JS</span>
+            <span class="tech-badge">💾 LocalStorage</span>
+        </div>
+    </div>
+
+    <script>
+        /* ===================================
+           Voice Expense Tracker - JavaScript
+           =================================== */
+
+        // State
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        let isListening = false;
+        let recognition = null;
+
+        // DOM Elements
+        const voiceBtn = document.getElementById('voiceBtn');
+        const voiceStatus = document.getElementById('voiceStatus');
+        const transcriptBox = document.getElementById('transcriptBox');
+        const manualInput = document.getElementById('manualInput');
+        const addBtn = document.getElementById('addBtn');
+        const transactionsBody = document.getElementById('transactionsBody');
+        const emptyState = document.getElementById('emptyState');
+        const clearBtn = document.getElementById('clearBtn');
+        const aiProcessing = document.getElementById('aiProcessing');
+        const totalIncomeEl = document.getElementById('totalIncome');
+        const totalExpenseEl = document.getElementById('totalExpense');
+        const balanceEl = document.getElementById('balance');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initSpeechRecognition();
+            renderTransactions();
+            updateSummary();
+            setupEventListeners();
+        });
+
+        // Setup Speech Recognition
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.lang = 'th-TH';
+                recognition.continuous = false;
+                recognition.interimResults = true;
+
+                recognition.onstart = () => {
+                    isListening = true;
+                    voiceBtn.classList.add('listening');
+                    voiceBtn.textContent = '🔴';
+                    voiceStatus.textContent = 'กำลังฟัง...';
+                    voiceStatus.classList.add('listening');
+                };
+
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    transcriptBox.innerHTML = `<span>"${transcript}"</span>`;
+
+                    if (event.results[0].isFinal) {
+                        processText(transcript);
+                    }
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    stopListening();
+                    voiceStatus.textContent = 'เกิดข้อผิดพลาด กรุณาลองใหม่';
+                };
+
+                recognition.onend = () => {
+                    stopListening();
+                };
+            } else {
+                voiceBtn.disabled = true;
+                voiceStatus.textContent = 'เบราว์เซอร์ไม่รองรับ Speech Recognition';
+            }
+        }
+
+        function stopListening() {
+            isListening = false;
+            voiceBtn.classList.remove('listening');
+            voiceBtn.textContent = '🎤';
+            voiceStatus.textContent = 'กดปุ่มเพื่อเริ่มพูด';
+            voiceStatus.classList.remove('listening');
+        }
+
+        // Event Listeners
+        function setupEventListeners() {
+            voiceBtn.addEventListener('click', () => {
+                if (isListening) {
+                    recognition.stop();
+                } else {
+                    transcriptBox.innerHTML = '<span class="transcript-placeholder">กำลังฟัง...</span>';
+                    recognition.start();
+                }
+            });
+
+            addBtn.addEventListener('click', () => {
+                const text = manualInput.value.trim();
+                if (text) {
+                    transcriptBox.innerHTML = `<span>"${text}"</span>`;
+                    processText(text);
+                    manualInput.value = '';
+                }
+            });
+
+            manualInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addBtn.click();
+                }
+            });
+
+            clearBtn.addEventListener('click', () => {
+                if (confirm('ต้องการล้างรายการทั้งหมด?')) {
+                    transactions = [];
+                    saveTransactions();
+                    renderTransactions();
+                    updateSummary();
+                }
+            });
+
+            // Example chips
+            document.querySelectorAll('.example-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const text = chip.dataset.text;
+                    manualInput.value = text;
+                    transcriptBox.innerHTML = `<span>"${text}"</span>`;
+                    processText(text);
+                    manualInput.value = '';
+                });
+            });
+        }
+
+        // AI Processing (Simulated - ในการใช้งานจริงจะเชื่อมต่อกับ LangChain)
+        async function processText(text) {
+            aiProcessing.classList.add('active');
+
+            // Simulate AI processing delay
+            await new Promise(resolve => setTimeout(resolve, 800));
+
+            const result = parseTransaction(text);
+
+            aiProcessing.classList.remove('active');
+
+            if (result) {
+                addTransaction(result);
+            } else {
+                transcriptBox.innerHTML += '<br><span style="color: var(--warning);">⚠️ ไม่สามารถแปลงข้อความได้ กรุณาลองใหม่</span>';
+            }
+        }
+
+        // Parse transaction from text (Simulated NLP)
+        function parseTransaction(text) {
+            const normalizedText = text.toLowerCase();
+
+            // Income keywords
+            const incomeKeywords = ['เงินเดือน', 'ได้', 'รับ', 'โบนัส', 'ขาย', 'เข้า', 'รายได้'];
+            // Expense keywords  
+            const expenseKeywords = ['ซื้อ', 'จ่าย', 'ค่า', 'กิน', 'เติม', 'ออก', 'หัก'];
+
+            // Extract amount
+            const amountMatch = text.match(/(\d{1,3}(,\d{3})*|\d+)/);
+            if (!amountMatch) return null;
+
+            const amount = parseInt(amountMatch[0].replace(/,/g, ''));
+            if (isNaN(amount) || amount <= 0) return null;
+
+            // Determine type
+            let type = 'expense'; // Default to expense
+            for (const keyword of incomeKeywords) {
+                if (normalizedText.includes(keyword)) {
+                    type = 'income';
+                    break;
+                }
+            }
+
+            // Extract description (remove amount and keywords)
+            let description = text
+                .replace(/(\d{1,3}(,\d{3})*|\d+)/g, '')
+                .replace(/บาท/g, '')
+                .replace(/เงิน/g, '')
+                .trim();
+
+            // Clean up description
+            if (description.length < 2) {
+                description = type === 'income' ? 'รายรับ' : 'รายจ่าย';
+            }
+
+            return {
+                id: Date.now(),
+                type,
+                description,
+                amount,
+                date: new Date().toLocaleDateString('th-TH')
+            };
+        }
+
+        // Add Transaction
+        function addTransaction(transaction) {
+            transactions.unshift(transaction);
+            saveTransactions();
+            renderTransactions();
+            updateSummary();
+
+            // Show success message
+            transcriptBox.innerHTML += `<br><span style="color: var(--success);">✓ เพิ่มรายการ${transaction.type === 'income' ? 'รับ' : 'จ่าย'} ${formatCurrency(transaction.amount)} สำเร็จ!</span>`;
+        }
+
+        // Delete Transaction
+        function deleteTransaction(id) {
+            transactions = transactions.filter(t => t.id !== id);
+            saveTransactions();
+            renderTransactions();
+            updateSummary();
+        }
+
+        // Render Transactions
+        function renderTransactions() {
+            if (transactions.length === 0) {
+                transactionsBody.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            transactionsBody.innerHTML = transactions.map(t => `
+                <tr>
+                    <td>
+                        <span class="type-badge ${t.type}">
+                            ${t.type === 'income' ? '💰 รายรับ' : '💸 รายจ่าย'}
+                        </span>
+                    </td>
+                    <td>${t.description}</td>
+                    <td>
+                        <span class="amount ${t.type}">
+                            ${t.type === 'income' ? '+' : '-'}${formatCurrency(t.amount)}
+                        </span>
+                    </td>
+                    <td>${t.date}</td>
+                    <td>
+                        <button class="delete-btn" onclick="deleteTransaction(${t.id})">×</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Update Summary
+        function updateSummary() {
+            const income = transactions
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + t.amount, 0);
+
+            const expense = transactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+
+            const balance = income - expense;
+
+            totalIncomeEl.textContent = formatCurrency(income);
+            totalExpenseEl.textContent = formatCurrency(expense);
+            balanceEl.textContent = formatCurrency(balance);
+        }
+
+        // Save to LocalStorage
+        function saveTransactions() {
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+        }
+
+        // Format Currency
+        function formatCurrency(amount) {
+            return '฿' + amount.toLocaleString('th-TH');
+        }
+
+        // Make deleteTransaction available globally
+        window.deleteTransaction = deleteTransaction;
+    </script>
+</body>
+
+</html>
